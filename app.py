@@ -111,9 +111,12 @@ def login():
 
 @app.route('/logout')
 def logout():
-    """Handle logout of user."""
+    """Logout current user and redirect to home page"""
+    do_logout()
 
-    # IMPLEMENT THIS
+    return redirect("/")
+
+
 
 
 ##############################################################################
