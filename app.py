@@ -213,7 +213,7 @@ def stop_following(follow_id):
 
 @app.route('/users/profile', methods=["GET", "POST"])
 def profile():
-    """Update profile for current user."""
+    """ Check if logged in, serve User Edit Form and Handle Post request """
     
     if not g.user:
             flash("Access unauthorized.", "danger")
@@ -245,7 +245,7 @@ def profile():
 
     
 
-    # IMPLEMENT THIS
+
 
 
 @app.route('/users/delete', methods=["POST"])
@@ -326,8 +326,10 @@ def homepage():
     """
 
     if g.user:
+        following_user_ids = [user.id for user in g.user.following]
         messages = (Message
                     .query
+                    .filter(Message.user_id.in_(following_user_ids))
                     .order_by(Message.timestamp.desc())
                     .limit(100)
                     .all())
