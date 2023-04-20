@@ -113,8 +113,9 @@ def login():
 def logout():
     """Logout current user and redirect to home page"""
     do_logout()
+    flash("You are now logged out.", "danger")
 
-    return redirect("/")
+    return redirect("/login")
 
 
 
