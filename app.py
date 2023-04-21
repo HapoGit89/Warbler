@@ -114,7 +114,7 @@ def logout():
     """Logout current user and redirect to home page"""
 
     do_logout()
-    
+
     flash("You are now logged out.", "danger")
 
     return redirect("/login")
@@ -145,7 +145,11 @@ def list_users():
 @app.route('/users/<int:user_id>')
 def users_show(user_id):
     """Show user profile."""
-
+    
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+    
     user = User.query.get_or_404(user_id)
     likes = Likes.query.filter_by(user_id=user.id).all()
     no_likes = len(likes)
@@ -278,13 +282,15 @@ def delete_user():
 @app.route('/users/add_like/<message_id>', methods = ["POST"])
 def add_like(message_id):
     """ Add like to database and make it visible on home page and user page"""
+    
     if not g.user:
         flash ("Access unauthorized.", "danger")
         return redirect("/")
+   
     else:
         user = g.user
         user_likes = [like.message_id for like in Likes.query.filter_by(user_id = user.id).all()]
-        print (f"USER LIKES *********{user_likes}")
+        
         if int(message_id) not in user_likes:
             new_like = Likes(user_id = user.id, message_id = message_id)
             db.session.add(new_like)
