@@ -5,7 +5,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
 from forms import UserAddForm, LoginForm, MessageForm, UserEditForm
-from models import db, connect_db, User, Message
+from models import db, connect_db, User, Message, Likes
 
 CURR_USER_KEY = "curr_user"
 
@@ -223,22 +223,26 @@ def profile():
             form = UserEditForm(obj = g.user)
             
             if form.validate_on_submit():
-                    user = g.user
-                    user.username = form.username.data
-                    user.email = form.email.data
-                    user.bio = form.bio.data
-                    user.image_url = form.image_url.data
-                    user.header_image_url = form.header_image_url.data
-                    password = form.password.data
-                    if User.authenticate(user.username, password):
-                        db.session.add(user)
-                        db.session.commit()
-                        return redirect (f"/users/{user.id}")
-                    else:
-                        flash("Wrong password.", "danger")
-                        return redirect ("/users/profile")
-
-
+                    try:
+                        user = g.user
+                        user.username = form.username.data
+                        user.email = form.email.data
+                        user.bio = form.bio.data
+                        user.image_url = form.image_url.data
+                        user.header_image_url = form.header_image_url.data
+                        password = form.password.data
+                        if User.authenticate(user.username, password):
+                            db.session.add(user)
+                            db.session.commit()
+                            return redirect (f"/users/{user.id}")
+                        else:
+                            flash("Wrong password.", "danger")
+                            return redirect ("/users/profile")
+                    except IntegrityError:
+                        flash("Username already taken", 'danger')
+                        return render_template("users/edit.html", form=form)
+            
+            
             else: 
                 return render_template("users/edit.html", form = form)
 
@@ -262,6 +266,25 @@ def delete_user():
     db.session.commit()
 
     return redirect("/signup")
+
+@app.route('/users/add_like/<message_id>', methods = ["POST"])
+def add_like(message_id):
+    if not g.user:
+        flash ("Access unauthorized.", "danger")
+        return redirect("/")
+    else:
+        user = g.user
+        user_likes = [like.message_id for like in Likes.query.filter_by(user_id = user.id).all()]
+        print (f"USER LIKES *********{user_likes}")
+        if int(message_id) not in user_likes:
+            new_like = Likes(user_id = user.id, message_id = message_id)
+            db.session.add(new_like)
+            db.session.commit()
+        else: 
+            like_to_delete = Likes.query.filter(Likes.user_id == user.id, Likes.message_id == message_id).one()
+            db.session.delete(like_to_delete)
+            db.session.commit()
+        return redirect ("/")
 
 
 ##############################################################################
@@ -313,6 +336,8 @@ def messages_destroy(message_id):
     return redirect(f"/users/{g.user.id}")
 
 
+
+
 ##############################################################################
 # Homepage and error pages
 
@@ -333,8 +358,10 @@ def homepage():
                     .order_by(Message.timestamp.desc())
                     .limit(100)
                     .all())
-
-        return render_template('home.html', messages=messages)
+        likes = Likes.query.filter_by(user_id=g.user.id).all()
+        liked_message_ids = [like.message_id for like in likes]
+       
+        return render_template('home.html', messages=messages, likes = liked_message_ids)
 
     else:
         return render_template('home-anon.html')
