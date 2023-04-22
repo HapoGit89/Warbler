@@ -84,4 +84,6 @@ class UserModelTestCase(TestCase):
         self.assertEqual(str(u), f"<User #{u.id}: {u.username}, {u.email}>")
         self.assertEqual(u1.is_followed_by(u2), 1)
         self.assertEqual(u2.is_followed_by(u1), 0)
+        self.assertEqual(u1.is_following(u2), 0)
+        self.assertEqual(u2.is_following(u1), 1)
 
