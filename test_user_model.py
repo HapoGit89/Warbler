@@ -50,10 +50,39 @@ class UserModelTestCase(TestCase):
             password="HASHED_PASSWORD"
         )
 
+        u1 = User(
+            email="test1@test.com",
+            username="testuser1",
+            password="HASHED_PASSWORD"
+        )
+
+        u2 = User(
+            email="test2@test.com",
+            username="testuser2",
+            password="HASHED_PASSWORD"
+        )
+
+        
+
+       
+
         db.session.add(u)
+        db.session.add(u1)
+        db.session.add(u2)
+        db.session.commit()
+
+        follow = Follows(
+            user_being_followed_id = u1.id,
+            user_following_id = u2.id
+        )
+
+        db.session.add(follow)
         db.session.commit()
 
         # User should have no messages & no followers
         self.assertEqual(len(u.messages), 0)
         self.assertEqual(len(u.followers), 0)
         self.assertEqual(str(u), f"<User #{u.id}: {u.username}, {u.email}>")
+        self.assertEqual(u1.is_followed_by(u2), 1)
+        self.assertEqual(u2.is_followed_by(u1), 0)
+
