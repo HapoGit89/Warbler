@@ -55,7 +55,6 @@ class UserModelTestCase(TestCase):
             username="testuser1",
             password="HASHED_PASSWORD"
         )
-
         u2 = User(
             email="test2@test.com",
             username="testuser2",
