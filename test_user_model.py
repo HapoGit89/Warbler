@@ -30,7 +30,7 @@ db.create_all()
 
 
 class UserModelTestCase(TestCase):
-    """Test views for messages."""
+    """Test views for users."""
 
     def setUp(self):
         """Create test client, add sample data."""
@@ -56,3 +56,4 @@ class UserModelTestCase(TestCase):
         # User should have no messages & no followers
         self.assertEqual(len(u.messages), 0)
         self.assertEqual(len(u.followers), 0)
+        self.assertEqual(str(u), f"<User #{u.id}: {u.username}, {u.email}>")
