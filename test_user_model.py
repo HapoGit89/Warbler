@@ -30,7 +30,7 @@ db.create_all()
 
 
 class UserModelTestCase(TestCase):
-    """Test views for users."""
+    """Test models for users."""
 
     def setUp(self):
         """Create test client, add sample data."""
@@ -81,11 +81,14 @@ class UserModelTestCase(TestCase):
         # User should have no messages & no followers
         self.assertEqual(len(u.messages), 0)
         self.assertEqual(len(u.followers), 0)
+        # Test if __repr__ func works
         self.assertEqual(str(u), f"<User #{u.id}: {u.username}, {u.email}>")
+        # testing follower funcs
         self.assertEqual(u1.is_followed_by(u2), 1)
         self.assertEqual(u2.is_followed_by(u1), 0)
         self.assertEqual(u1.is_following(u2), 0)
         self.assertEqual(u2.is_following(u1), 1)
+        # testing signin and auth funcs
         self.assertIn("testuser3, test3@test.de",str(User.signup("testuser3", "test3@test.de", "Bird", "https://cdn.pixabay.com/photo/2017/02/07/16/47/kingfisher-2046453__340.jpg")))
         self.assertIn("testuser3, test3@test.de", str(User.authenticate("testuser3", "Bird")))
         self.assertEquals(False, User.authenticate("testuser3", "Birdyyy"))
