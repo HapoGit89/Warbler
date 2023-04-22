@@ -88,3 +88,5 @@ class UserModelTestCase(TestCase):
         self.assertEqual(u2.is_following(u1), 1)
         self.assertIn("testuser3, test3@test.de",str(User.signup("testuser3", "test3@test.de", "Bird", "https://cdn.pixabay.com/photo/2017/02/07/16/47/kingfisher-2046453__340.jpg")))
         self.assertIn("testuser3, test3@test.de", str(User.authenticate("testuser3", "Bird")))
+        self.assertEquals(False, User.authenticate("testuser3", "Birdyyy"))
+        self.assertEquals(False, User.authenticate("testuser5", "Bird"))
