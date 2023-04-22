@@ -71,3 +71,21 @@ class MessageViewTestCase(TestCase):
 
             msg = Message.query.one()
             self.assertEqual(msg.text, "Hello")
+
+    def test_messages_show(self):
+        """Can we see message list?"""
+
+
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.testuser.id
+
+            c.post("/messages/new", data={"text": "Hello this is a test"})
+            msg = Message.query.one()
+            resp = c.get(f"/messages/{msg.id}")
+
+            # Test response status code
+            self.assertEqual(resp.status_code, 200)
+            
+            #Test if message is in HTML response
+            self.assertIn("Hello this is a test", str(resp.data))
