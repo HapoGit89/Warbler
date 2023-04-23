@@ -111,8 +111,46 @@ class UserViewTestCase(TestCase):
             #Test if testuser in HTML response
             self.assertIn(f'<img src="{ u.image_url }" alt="Image for {u.username }" id="profile-avatar">', str(resp.data))
 
-           
-    def test_show_following(self):
+    
+
+    def test_add_follow(self):
+        """Can we add follows?"""
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.testuser.id
+
+            u = self.testuser
+            utb = User(username = "followme",
+                       email = "follow@follow.de",
+                       password = "Followme")
+            db.session.add(utb)
+            db.session.commit()
+            
+            resp = c.post(f"/users/follow/{utb.id}")
+
+            self.assertEqual(resp.status_code, 302)
+            self.assertIn(f"users/{u.id}/following", str(resp.data))
+
+    def test_add_follow_loggedout(self):
+        """Can we add follows?"""
+        with self.client as c:
+            
+            u = self.testuser
+            utb = User(username = "followme",
+                       email = "follow@follow.de",
+                       password = "Followme")
+            db.session.add(utb)
+            db.session.commit()
+
+            
+            resp = c.post(f"/users/follow/{utb.id}")
+
+            self.assertEqual(resp.status_code, 302)
+            self.assertIn('<p>You should be redirected automatically to target URL: <a href="/">/</a>', str(resp.data))
+
+
+
+    def test_show_following_loggedin(self):
         """Can we see following users?"""
         with self.client as c:
             with c.session_transaction() as sess:
@@ -135,7 +173,31 @@ class UserViewTestCase(TestCase):
             self.assertEqual(resp.status_code, 200)
             self.assertIn(f"{utb.username}", str(resp.data))
 
+    
 
+    def test_show_following_loggedout(self):
+        """Can we see following users?"""
+        with self.client as c:
+            
+
+            u = self.testuser
+            utb = User(username = "followme",
+                       email = "follow@follow.de",
+                       password = "Followme")
+            db.session.add(utb)
+            db.session.commit()
+
+            f = Follows(user_being_followed_id = utb.id, user_following_id = u.id)
+            
+            db.session.add(f)
+            db.session.commit()
+
+            resp = c.get(f"/users/{u.id}/following")
+
+            self.assertEqual(resp.status_code, 302)
+            self.assertIn('target URL: <a href="/">/</a>', str(resp.data))
+
+  
 
 
 
